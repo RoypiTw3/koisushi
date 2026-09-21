@@ -11,14 +11,19 @@
       html.classList.add('no-preloader');
     } else {
       body.classList.add('is-locked');
-      window.addEventListener('load', () => {
+      const dismiss = () => {
         setTimeout(() => {
           pre.classList.add('is-done');
           body.classList.remove('is-locked');
           sessionStorage.setItem('koi-pre', '1');
           pre.addEventListener('transitionend', () => pre.remove(), { once: true });
-        }, 1500);
-      });
+        }, 400);
+      };
+      if (document.readyState === 'complete') {
+        dismiss();
+      } else {
+        window.addEventListener('load', dismiss);
+      }
     }
   }
 

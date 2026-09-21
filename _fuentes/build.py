@@ -325,7 +325,10 @@ def cat_html(c):
 
 
 # ---------------------------------------------------------------- plantilla
-def head(title, desc, og_img, body_class):
+def head(title, desc, og_img, body_class, preload=None):
+    preload_tags = ''
+    if preload:
+        preload_tags = '\n  ' + '\n  '.join(preload)
     return f'''<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -337,8 +340,10 @@ def head(title, desc, og_img, body_class):
   <link rel="icon" type="image/png" href="img/favicon.png">
   <link rel="apple-touch-icon" href="img/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@110,400;110,500;125,400;125,500&family=Bodoni+Moda:wght@400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>{preload_tags}
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@110,400;110,500;125,400;125,500&family=Bodoni+Moda:wght@400&family=DM+Sans:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@110,400;110,500;125,400;125,500&family=Bodoni+Moda:wght@400&family=DM+Sans:wght@300;400;500&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@110,400;110,500;125,400;125,500&family=Bodoni+Moda:wght@400&family=DM+Sans:wght@300;400;500&display=swap"></noscript>
   <link rel="stylesheet" href="css/style.css">
   <meta property="og:title" content="{html.escape(title)}">
   <meta property="og:description" content="{html.escape(desc)}">
@@ -375,8 +380,10 @@ HEADER = f'''
       </div>
       <div class="nav__media">
         <picture>
+          <source type="image/webp" media="(max-width: 767px)" srcset="img/barco-sushi-m.webp">
+          <source type="image/webp" srcset="img/barco-sushi.webp">
           <source media="(max-width: 767px)" srcset="img/barco-sushi-m.jpg">
-          <img src="img/barco-sushi.jpg" alt="Barco de sushi de Koi">
+          <img src="img/barco-sushi.jpg" alt="Barco de sushi de Koi" loading="lazy" decoding="async">
         </picture>
         <div class="cap"><span class="label">Sushi · Ramen · Teppanyaki</span><img src="img/logo-blanco.png" alt=""><span class="label">El Ingenio · Cali</span></div>
       </div>
@@ -404,7 +411,10 @@ FOOTER = f'''
   <footer class="footer">
     <div class="footer__top">
       <div class="footer__brand reveal">
-        <img src="img/fachada-m.jpg" alt="Fachada del restaurante Koi en el barrio El Ingenio" loading="lazy">
+        <picture>
+          <source type="image/webp" srcset="img/fachada-m.webp">
+          <img src="img/fachada-m.jpg" alt="Fachada del restaurante Koi en el barrio El Ingenio" loading="lazy" decoding="async" width="150" height="200">
+        </picture>
         <div>
           <p>Sushi, ramen y teppanyaki con el sabor de la cocina oriental, en el barrio El Ingenio de Cali.</p>
           <a class="arrow-link on-light" href="experiencias.html">Experiencias Koi {ARROW}</a>
@@ -438,7 +448,7 @@ FOOTER = f'''
     </div>
   </footer>
   <a class="wa-float" href="{WA}" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 12 12 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg></a>
-  <script src="js/main.js"></script>
+  <script src="js/main.js" defer></script>
 </body>
 </html>
 '''
@@ -446,8 +456,12 @@ FOOTER = f'''
 
 def card(img, title, price, text, badge=''):
     b = f'<span class="card__badge">{STAR} {badge}</span>' if badge else ''
+    webp = img.replace('.jpg', '.webp')
     return f'''        <article class="card">
-          <img src="img/{img}" alt="{html.escape(title)}" loading="lazy">
+          <picture>
+            <source type="image/webp" srcset="img/{webp}">
+            <img src="img/{img}" alt="{html.escape(title)}" loading="lazy" decoding="async">
+          </picture>
           <div class="card__head">{b}<h3 class="h3 card__title">{html.escape(title)}</h3><span class="card__price">{price}</span></div>
           <div>
             <p class="card__text">{html.escape(text)}</p>
@@ -461,14 +475,20 @@ def card(img, title, price, text, badge=''):
 def page_index():
     return head('Koi Sushi & Teppanyaki · Cocina oriental en Cali',
                 'Sushi, ramen y teppanyaki en el barrio El Ingenio, Cali. Rolls, barcos de sushi, ramen, platos especiales ganadores de festivales, catering y domicilios.',
-                'sushi-especial-m.jpg', 'page-inicio') + '''
+                'sushi-especial-m.jpg', 'page-inicio',
+                preload=[
+                    '<link rel="preload" as="image" href="img/sushi-especial-m.webp" type="image/webp" media="(max-width: 767px)">',
+                    '<link rel="preload" as="image" href="img/sushi-especial.webp" type="image/webp" media="(min-width: 768px)">'
+                ]) + '''
   <div class="preloader" aria-hidden="true"><p>Sushi, ramen y teppanyaki.<br><em>Cocina oriental</em> en Cali.</p></div>''' + HEADER + f'''
   <main>
     <section class="hero">
       <div class="hero__media">
         <picture>
+          <source type="image/webp" media="(max-width: 767px)" srcset="img/sushi-especial-m.webp">
+          <source type="image/webp" srcset="img/sushi-especial.webp">
           <source media="(max-width: 767px)" srcset="img/sushi-especial-m.jpg">
-          <img src="img/sushi-especial.jpg" alt="Rolls de sushi especial de Koi" fetchpriority="high">
+          <img src="img/sushi-especial.jpg" alt="Rolls de sushi especial de Koi" fetchpriority="high" decoding="async">
         </picture>
       </div>
       <p class="label hero__label reveal">Sushi · Ramen · Teppanyaki <span class="jp">鯉寿司と鉄板</span></p>
@@ -482,7 +502,14 @@ def page_index():
     </section>
 
     <section class="split">
-      <div class="split__media"><img src="img/teppanyaki.jpg" alt="Platos de teppanyaki recién salteados" loading="lazy"></div>
+      <div class="split__media">
+        <picture>
+          <source type="image/webp" media="(max-width: 767px)" srcset="img/teppanyaki-m.webp">
+          <source type="image/webp" srcset="img/teppanyaki.webp">
+          <source media="(max-width: 767px)" srcset="img/teppanyaki-m.jpg">
+          <img src="img/teppanyaki.jpg" alt="Platos de teppanyaki recién salteados" loading="lazy" decoding="async">
+        </picture>
+      </div>
       <div class="split__panel">
         <div>
           <p class="label reveal">Teppanyaki <span class="jp">鉄板焼き</span></p>
@@ -497,8 +524,10 @@ def page_index():
 
     <section class="full-image">
       <picture>
+        <source type="image/webp" media="(max-width: 767px)" srcset="img/tabla-sushi-m.webp">
+        <source type="image/webp" srcset="img/tabla-sushi.webp">
         <source media="(max-width: 767px)" srcset="img/tabla-sushi-m.jpg">
-        <img src="img/tabla-sushi.jpg" alt="Tabla de sushi con rolls variados" loading="lazy">
+        <img src="img/tabla-sushi.jpg" alt="Tabla de sushi con rolls variados" loading="lazy" decoding="async">
       </picture>
     </section>
 
@@ -537,7 +566,10 @@ def page_index():
       </div>
       <div class="exp__grid">
         <article class="exp-item reveal">
-          <img src="img/chef-teppanyaki.jpg" alt="Chef de Koi en un show de teppanyaki" loading="lazy">
+          <picture>
+            <source type="image/webp" srcset="img/chef-teppanyaki.webp">
+            <img src="img/chef-teppanyaki.jpg" alt="Chef de Koi en un show de teppanyaki" loading="lazy" decoding="async">
+          </picture>
           <div class="exp-item__body">
             <h3 class="exp-item__title">Teppanyaki show</h3>
             <span class="label exp-item__sub">Live show</span>
@@ -546,7 +578,10 @@ def page_index():
           </div>
         </article>
         <article class="exp-item reveal reveal-d1">
-          <img src="img/sushi-en-casa.jpg" alt="Barco de sushi para catering" loading="lazy">
+          <picture>
+            <source type="image/webp" srcset="img/sushi-en-casa.webp">
+            <img src="img/sushi-en-casa.jpg" alt="Barco de sushi para catering" loading="lazy" decoding="async">
+          </picture>
           <div class="exp-item__body">
             <h3 class="exp-item__title">Sushi at home</h3>
             <span class="label exp-item__sub">Sushi catering</span>
@@ -555,7 +590,10 @@ def page_index():
           </div>
         </article>
         <article class="exp-item reveal reveal-d2">
-          <img src="img/clases-sushi.jpg" alt="Clase de sushi en Koi" loading="lazy">
+          <picture>
+            <source type="image/webp" srcset="img/clases-sushi.webp">
+            <img src="img/clases-sushi.jpg" alt="Clase de sushi en Koi" loading="lazy" decoding="async">
+          </picture>
           <div class="exp-item__body">
             <h3 class="exp-item__title">Clases de sushi</h3>
             <span class="label exp-item__sub">Aprende con Koi</span>
@@ -569,7 +607,14 @@ def page_index():
     <section class="about on-mist">
       <div class="grid">
         <p class="label about__label reveal">Domicilios</p>
-        <div class="about__media reveal reveal-d1"><img src="img/koi-especial.jpg" alt="Koi especial: yakimeshi, harumakis y sushi filadelfia" loading="lazy"></div>
+        <div class="about__media reveal reveal-d1">
+          <picture>
+            <source type="image/webp" media="(max-width: 767px)" srcset="img/koi-especial-m.webp">
+            <source type="image/webp" srcset="img/koi-especial.webp">
+            <source media="(max-width: 767px)" srcset="img/koi-especial-m.jpg">
+            <img src="img/koi-especial.jpg" alt="Koi especial: yakimeshi, harumakis y sushi filadelfia" loading="lazy" decoding="async">
+          </picture>
+        </div>
         <div class="about__body">
           <h2 class="reveal">Koi hasta la puerta de tu casa</h2>
           <p class="lede reveal reveal-d1">Pide por WhatsApp y recibe tu sushi, ramen o teppanyaki donde estés. Cubrimos Cali y también Buga, Palmira y Rozo. El restaurante es pet friendly.</p>
@@ -588,13 +633,19 @@ def page_menu():
     cats = ''.join(cat_html(c) for c in MENU)
     return head('Menú · Koi Sushi & Teppanyaki, Cali',
                 'Menú completo de Koi: entradas, teppanyaki, especiales, ramen, nigiri, sashimi, sushi tradicional, sencillo y especial, vegetariano, postres y bebidas. Precios en pesos colombianos.',
-                'nigiri-m.jpg', 'page-menu') + HEADER + f'''
+                'nigiri-m.jpg', 'page-menu',
+                preload=[
+                    '<link rel="preload" as="image" href="img/nigiri-m.webp" type="image/webp" media="(max-width: 767px)">',
+                    '<link rel="preload" as="image" href="img/nigiri.webp" type="image/webp" media="(min-width: 768px)">'
+                ]) + HEADER + f'''
   <main>
     <section class="hero hero--short">
       <div class="hero__media">
         <picture>
+          <source type="image/webp" media="(max-width: 767px)" srcset="img/nigiri-m.webp">
+          <source type="image/webp" srcset="img/nigiri.webp">
           <source media="(max-width: 767px)" srcset="img/nigiri-m.jpg">
-          <img src="img/nigiri.jpg" alt="Nigiri de salmón, atún y kanikama sobre tabla de madera" fetchpriority="high">
+          <img src="img/nigiri.jpg" alt="Nigiri de salmón, atún y kanikama sobre tabla de madera" fetchpriority="high" decoding="async">
         </picture>
       </div>
       <p class="label hero__label reveal">Koi Sushi &amp; Teppanyaki <span class="jp">メニュー</span></p>
@@ -636,11 +687,17 @@ def page_menu():
 def page_experiencias():
     return head('Experiencias · Teppanyaki show, catering y clases de sushi · Koi Cali',
                 'Teppanyaki en vivo, catering de sushi a domicilio y clases de sushi en Cali. Koi lleva la cocina oriental a tus eventos.',
-                'chef-teppanyaki.jpg', 'page-experiencias') + HEADER + f'''
+                'chef-teppanyaki.jpg', 'page-experiencias',
+                preload=[
+                    '<link rel="preload" as="image" href="img/chef-teppanyaki.webp" type="image/webp">'
+                ]) + HEADER + f'''
   <main>
     <section class="hero hero--short">
       <div class="hero__media">
-        <img src="img/chef-teppanyaki.jpg" alt="Chef de Koi durante un show de teppanyaki" fetchpriority="high" style="object-position: 30% 50%">
+        <picture>
+          <source type="image/webp" srcset="img/chef-teppanyaki.webp">
+          <img src="img/chef-teppanyaki.jpg" alt="Chef de Koi durante un show de teppanyaki" fetchpriority="high" decoding="async" style="object-position: 30% 50%">
+        </picture>
       </div>
       <p class="label hero__label reveal">Catering service <span class="jp">ケータリング</span></p>
       <h1 class="hero__title reveal reveal-d1">Experiencias Koi</h1>
@@ -656,7 +713,12 @@ def page_experiencias():
 
     <section class="feature on-cream">
       <div class="grid">
-        <div class="feature__media reveal"><img src="img/chef-teppanyaki.jpg" alt="Show de teppanyaki de Koi en la noche" loading="lazy"></div>
+        <div class="feature__media reveal">
+          <picture>
+            <source type="image/webp" srcset="img/chef-teppanyaki.webp">
+            <img src="img/chef-teppanyaki.jpg" alt="Show de teppanyaki de Koi en la noche" loading="lazy" decoding="async">
+          </picture>
+        </div>
         <div class="feature__body">
           <p class="label reveal">Teppanyaki <span class="jp">鉄板焼き</span></p>
           <h2 class="reveal reveal-d1">Teppanyaki live show</h2>
@@ -673,7 +735,12 @@ def page_experiencias():
 
     <section class="feature feature--reverse on-stone">
       <div class="grid">
-        <div class="feature__media reveal"><img src="img/sushi-en-casa.jpg" alt="Barco de sushi de Koi listo para un evento" loading="lazy"></div>
+        <div class="feature__media reveal">
+          <picture>
+            <source type="image/webp" srcset="img/sushi-en-casa.webp">
+            <img src="img/sushi-en-casa.jpg" alt="Barco de sushi de Koi listo para un evento" loading="lazy" decoding="async">
+          </picture>
+        </div>
         <div class="feature__body">
           <p class="label reveal">Sushi catering <span class="jp">寿司</span></p>
           <h2 class="reveal reveal-d1">Sushi at home</h2>
@@ -690,7 +757,12 @@ def page_experiencias():
 
     <section class="feature on-cream">
       <div class="grid">
-        <div class="feature__media reveal"><img src="img/clases-sushi.jpg" alt="Personas preparando rolls en una clase de sushi de Koi" loading="lazy"></div>
+        <div class="feature__media reveal">
+          <picture>
+            <source type="image/webp" srcset="img/clases-sushi.webp">
+            <img src="img/clases-sushi.jpg" alt="Personas preparando rolls en una clase de sushi de Koi" loading="lazy" decoding="async">
+          </picture>
+        </div>
         <div class="feature__body">
           <p class="label reveal">Aprende con Koi <span class="jp">教室</span></p>
           <h2 class="reveal reveal-d1">Clases de sushi</h2>
@@ -710,13 +782,19 @@ def page_experiencias():
 def page_contacto():
     return head('Contacto · Koi Sushi & Teppanyaki, Cali',
                 'Escríbenos por WhatsApp al +57 320 385 3275 o visítanos en la Calle 16 #83A-15, barrio El Ingenio, Cali. Domicilios en Cali, Buga, Palmira y Rozo.',
-                'fachada-m.jpg', 'page-contacto') + HEADER + f'''
+                'fachada-m.jpg', 'page-contacto',
+                preload=[
+                    '<link rel="preload" as="image" href="img/fachada-m.webp" type="image/webp" media="(max-width: 767px)">',
+                    '<link rel="preload" as="image" href="img/fachada.webp" type="image/webp" media="(min-width: 768px)">'
+                ]) + HEADER + f'''
   <main>
     <section class="hero hero--short">
       <div class="hero__media">
         <picture>
+          <source type="image/webp" media="(max-width: 767px)" srcset="img/fachada-m.webp">
+          <source type="image/webp" srcset="img/fachada.webp">
           <source media="(max-width: 767px)" srcset="img/fachada-m.jpg">
-          <img src="img/fachada.jpg" alt="Fachada del restaurante Koi" fetchpriority="high">
+          <img src="img/fachada.jpg" alt="Fachada del restaurante Koi" fetchpriority="high" decoding="async">
         </picture>
       </div>
       <p class="label hero__label reveal">Koi Sushi &amp; Teppanyaki <span class="jp">連絡先</span></p>
