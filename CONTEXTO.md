@@ -59,7 +59,7 @@ koi/
 - Confirmar si las promociones semanales volvieron.
 - ¿Precios y disponibilidad vigentes? (la carta es de 2026 pero puede haber cambios).
 - Fotos propias del local y del equipo si quieren reemplazar las de la carta.
-- Publicación: GitHub Pages (como Perú Peñón), Netlify o dominio propio.
+- Publicación: Repositorio en GitHub https://github.com/RoypiTw3/koisushi y publicado en GitHub Pages https://roypitw3.github.io/koisushi/
 
 ## Cómo ver en local
 
